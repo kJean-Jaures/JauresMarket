@@ -11,7 +11,7 @@ test('Administration protégée et cycle complet des articles persistants', asyn
  const port=String(18000+Math.floor(Math.random()*10000));
  const password='test-only-'+Date.now();
  let child;
- async function start(){child=spawn(process.execPath,['server.js'],{env:{...process.env,PORT:port,HOST:'127.0.0.1',DATA_DIR:dir,ADMIN_PASSWORD:password},stdio:['ignore','pipe','pipe']});await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error('Démarrage trop long')),10000);child.stdout.on('data',chunk=>{if(chunk.toString().includes('JAURESMARKET')){clearTimeout(timeout);resolve();}});child.once('exit',code=>{clearTimeout(timeout);reject(Error('Serveur arrêté : '+code));});});}
+ async function start(){child=spawn(process.execPath,['server.js'],{env:{...process.env,VERCEL:'',SUPABASE_URL:'',PORT:port,HOST:'127.0.0.1',DATA_DIR:dir,ADMIN_PASSWORD:password},stdio:['ignore','pipe','pipe']});await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error('Démarrage trop long')),10000);child.stdout.on('data',chunk=>{if(chunk.toString().includes('JAURESMARKET')){clearTimeout(timeout);resolve();}});child.once('exit',code=>{clearTimeout(timeout);reject(Error('Serveur arrêté : '+code));});});}
  async function stop(){const exited=once(child,'exit');child.kill();await exited;}
  const base='http://127.0.0.1:'+port;
  const request=(url,method='GET',value,cookie)=>fetch(base+url,{method,headers:{...(value?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},body:value?JSON.stringify(value):undefined});
@@ -36,12 +36,17 @@ test('Administration protégée et cycle complet des articles persistants', asyn
  assert.deepEqual(await (await request('/api/products')).json(),[]);
  assert.equal((await (await request('/api/products?admin=1','GET',null,cookie)).json())[0].price,12000);
  await stop();await start();
- assert.equal((await request('/api/products?admin=1','GET',null,cookie)).status,401);
+ assert.equal((await request('/api/products?admin=1','GET',null,cookie)).status,200);
  const again=await request('/api/login','POST',{password});cookie=again.headers.get('set-cookie').split(';')[0];
  assert.equal((await (await request('/api/products?admin=1','GET',null,cookie)).json())[0].id,p.id);
  assert.equal((await request('/api/products/'+p.id,'DELETE',null,cookie)).status,200);
  assert.deepEqual(await (await request('/api/products?admin=1','GET',null,cookie)).json(),[]);
  assert.equal((await request('/api/logout','POST',null,cookie)).status,200);
  assert.equal((await request('/api/products?admin=1','GET',null,cookie)).status,401);
+ await stop();await start();
+ assert.equal((await request('/api/products?admin=1','GET',null,cookie)).status,401);
+ for(let i=0;i<10;i++)assert.equal((await request('/api/login','POST',{password:'incorrect'})).status,401);
+ await stop();await start();
+ assert.equal((await request('/api/login','POST',{password})).status,429);
  }finally{if(child?.exitCode===null)await stop();await rm(dir,{recursive:true,force:true});}
 });
