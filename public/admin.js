@@ -2,11 +2,15 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let products = [], editing = null, images = [], imageLoading = false;
 async function api(url, options = {}) {
-  const r = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
-  const data = await r.json();
+  let r;
+  try { r = await fetch(url, { ...options, signal: AbortSignal.timeout(35000), headers: { 'Content-Type': 'application/json', ...options.headers } }); }
+  catch { throw Error('Le serveur ne répond pas. Vérifie ta connexion et réessaie dans un instant.'); }
+  let data;
+  try { data = await r.json(); }
+  catch { throw Error(`Le serveur renvoie une réponse inattendue (HTTP ${r.status}). Vérifie le dernier déploiement Vercel.`); }
   if (!r.ok) {
     if (r.status === 401 && url !== '/api/login') { $('#dashboard').hidden = true; $('#login-panel').hidden = false; }
-    throw Error(data.error || 'Une erreur est survenue.');
+    throw Error((data.error || 'Une erreur est survenue.') + (data.code ? ' [' + data.code + ']' : ''));
   }
   return data;
 }
@@ -21,10 +25,16 @@ function render() {
   $('#admin-products').innerHTML = list.length ? list.map(p => `<article class="admin-row">${p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}">` : '<div class="mini-placeholder">JM</div>'}<div class="admin-product-info"><small>${esc(p.category)} · ${p.active ? 'Visible' : 'Masqué'}</small><h3>${esc(p.name)}</h3><p>${p.price === null ? 'Prix à confirmer' : new Intl.NumberFormat('fr-FR').format(p.price) + ' FCFA'} · Stock : ${p.stock === null ? 'à confirmer' : p.stock}</p></div><button class="button outline" data-edit="${p.id}">Modifier</button><button class="delete-button" data-delete="${p.id}">Supprimer</button></article>`).join('') : '<div class="empty"><h2>Aucun article pour le moment.</h2><p>Ajoute tes photos, tes prix et les détails.</p></div>';
 }
 $('#admin-search').addEventListener('input', render);
+$('#toggle-password').addEventListener('click', () => {
+  const input = $('#admin-password'), visible = input.type === 'password';
+  input.type = visible ? 'text' : 'password'; $('#toggle-password').textContent = visible ? 'Masquer' : 'Afficher'; $('#toggle-password').setAttribute('aria-pressed', String(visible));
+});
 $('#login-form').addEventListener('submit', async e => {
-  e.preventDefault(); $('#login-error').textContent = ''; const b = e.target.querySelector('button'); b.disabled = true;
-  try { await api('/api/login', { method: 'POST', body: JSON.stringify({ password: new FormData(e.target).get('password') }) }); e.target.reset(); await load(); }
-  catch (err) { $('#login-error').textContent = err.message; } finally { b.disabled = false; }
+  e.preventDefault(); $('#login-error').textContent = ''; const b = e.target.querySelector('button[type="submit"]'); b.disabled = true; b.textContent = 'Connexion…';
+  let connected = false;
+  try { await api('/api/login', { method: 'POST', body: JSON.stringify({ password: new FormData(e.target).get('password') }) }); connected = true; await load(); e.target.reset(); $('#admin-password').type = 'password'; $('#toggle-password').textContent = 'Afficher'; $('#toggle-password').setAttribute('aria-pressed', 'false'); }
+  catch (err) { $('#login-error').textContent = (connected ? 'Mot de passe accepté, mais le catalogue ne peut pas être chargé. ' : '') + err.message; }
+  finally { b.disabled = false; b.textContent = 'Se connecter →'; }
 });
 $('#logout').addEventListener('click', async () => {
   try { await api('/api/logout', { method: 'POST' }); products = []; $('#dashboard').hidden = true; $('#login-panel').hidden = false; }
