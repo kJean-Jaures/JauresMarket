@@ -22,6 +22,8 @@ Variables locales facultatives : `PORT`, `HOST`, `DATA_DIR`, `ADMIN_PASSWORD`, `
 
 1. Créer un projet Supabase. Dans son éditeur SQL, exécuter le contenu de [`supabase/schema.sql`](supabase/schema.sql). Il crée les tables, la fonction de limitation des connexions et le bucket public `product-images`. Le script peut être rejoué.
 2. Importer le dépôt `kJean-Jaures/JauresMarket` dans Vercel. Choisir le preset **Other**, garder la racine du dépôt, utiliser Node.js **24.x** et laisser les commandes de `vercel.json` s’appliquer. Le dossier statique est `public`, les routes API utilisent `api/index.js`.
+   Dans **Settings → Build and Deployment**, le **Root Directory** doit être la racine du dépôt (champ vide ou `.`), jamais `public`. **Output Directory** doit être `public`. Ne pas définir `app.js` comme point d’entrée serveur : `public/app.js` est exécuté uniquement par le navigateur. `vercel.json` impose le preset Other avec `framework: null`.
+
 3. Dans les variables d’environnement du projet Vercel, renseigner :
 
 | Variable | Valeur à renseigner |
@@ -55,3 +57,9 @@ npm test
 ```
 
 Les tests vérifient le cycle des articles, les permissions, la persistance et la révocation des sessions, la limitation des connexions et le point d’entrée Vercel. L’adaptateur Supabase est testé avec des réponses HTTP simulées ; ces tests ne valident pas un projet Supabase distant ni un déploiement Vercel réel.
+
+## Dépannage Vercel
+
+Si les logs affichent `ReferenceError: document is not defined` dans `/var/task/app.js`, Vercel exécute le script du navigateur comme une fonction serveur. Vérifier le dépôt et la branche `main`, choisir **Other** comme Framework Preset, remettre **Root Directory** à la racine du dépôt et **Output Directory** à `public`, puis redéployer le dernier commit sans réutiliser le cache de build. Le seul point d’entrée des fonctions est `api/index.js`.
+
+Après redéploiement, `/` doit renvoyer la page HTML, `/app.js` du JavaScript statique et `/api/products` une réponse JSON. Si les variables Supabase manquent, l’API renvoie 503 avec un message de configuration ; cela ne doit pas empêcher l’affichage de la page d’accueil.
