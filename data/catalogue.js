@@ -45,7 +45,8 @@ const entries = [
   ['boxeurs', 'Boxeurs', 'Sous-vêtements', 'Boxeurs présentés dans plusieurs modèles et coloris.']
 ];
 
-export const catalogue = entries.map(([reference, name, category, description]) => ({
+export const catalogue = entries.map(([reference, name, category, description], index) => ({
   id: createHash('sha256').update('jaures-whatsapp-' + reference).digest('hex').slice(0, 24),
+  illustration: `/products/collection-${Math.floor(index / 12) + 1}.png#tile=${index % 12}`,
   name, category, description, price: null, stock: null, sizes: '', colors: '', image: '', images: [], active: true
 }));
