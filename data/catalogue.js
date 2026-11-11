@@ -1,0 +1,51 @@
+import { createHash } from 'node:crypto';
+
+const entries = [
+  ['ensemble-cargo-treillis', 'Ensemble cargo treillis', 'Femme', 'Ensemble deux pièces avec haut et pantalon cargo à imprimé camouflage.'],
+  ['ensemble-noir-pantalon', 'Ensemble deux pièces noir', 'Femme', 'Ensemble noir avec haut et pantalon à motifs contrastants.'],
+  ['ensemble-leopard', 'Ensemble léopard', 'Femme', 'Ensemble avec haut et pantalon à imprimé léopard.'],
+  ['ensemble-leopard-rouge', 'Ensemble léopard rouge', 'Femme', 'Ensemble rouge avec haut et pantalon à imprimé léopard.'],
+  ['ensemble-pantalon-marron', 'Ensemble pantalon marron', 'Femme', 'Ensemble marron avec haut à manches longues et pantalon.'],
+  ['ensemble-jupe-haut-ecru', 'Ensemble jupe et haut écru', 'Femme', 'Ensemble écru avec jupe longue fendue et haut à manches longues.'],
+  ['ensemble-blanc-manches-longues', 'Ensemble deux pièces blanc', 'Femme', 'Ensemble blanc avec haut à épaules dégagées et manches longues.'],
+  ['robe-rose-imprimee', 'Robe décontractée rose imprimée', 'Femme', 'Robe à imprimé rose et orange, sans manches.'],
+  ['robe-rouge-manches-longues', 'Robe rouge à manches longues', 'Femme', 'Robe rouge à motifs et manches longues.'],
+  ['robe-bustier-marron', 'Robe bustier marron', 'Femme', 'Robe bustier marron avec détail de boucle à la taille.'],
+  ['robe-soiree-noire', 'Robe de soirée noire', 'Femme', 'Robe longue noire avec découpes et fente.'],
+  ['robe-bustier-rose', 'Robe bustier rose', 'Femme', 'Robe bustier rose avec jupe plissée.'],
+  ['robe-mini-imprimee', 'Mini-robe asymétrique imprimée', 'Femme', 'Mini-robe à imprimé gris et noir, avec bretelles croisées.'],
+  ['robe-bandeau-multicolore', 'Robe bandeau multicolore', 'Femme', 'Robe bandeau à rayures multicolores.'],
+  ['robe-noire-blanche', 'Robe noire et blanche à épaules dégagées', 'Femme', 'Robe noire courte avec bandeau blanc aux épaules.'],
+  ['combinaison-bustier-leopard', 'Combinaison bustier léopard', 'Femme', 'Combinaison courte bustier à imprimé léopard et lien à la taille.'],
+  ['robe-orange-imprimee', 'Robe orange imprimée', 'Femme', 'Robe courte orange à fines bretelles et imprimé.'],
+  ['maillot-long-statue', 'Maillot oversize à manches longues — Statue', 'Homme', 'Maillot noir et blanc à manches longues avec motif de statue.'],
+  ['maillot-long-la', 'Maillot oversize à manches longues — LA', 'Homme', 'Maillot à manches longues noir, gris et orange avec motif LA.'],
+  ['maillot-blanc-777', 'Maillot blanc à manches courtes — 777', 'Homme', 'Maillot blanc court avec inscription rouge 777.'],
+  ['maillot-rouge-7', 'Maillot rouge à manches courtes — 7', 'Homme', 'Maillot rouge à manches courtes avec numéro 7.'],
+  ['ensemble-blanc-jupe-courte', 'Ensemble blanc avec jupe courte', 'Femme', 'Ensemble blanc avec haut bustier et jupe courte.'],
+  ['combinaison-leopard-dos-nu', 'Combinaison léopard dos nu', 'Femme', 'Combinaison courte à imprimé léopard avec encolure profonde.'],
+  ['combinaison-femme-leopard', 'Combinaison femme imprimée léopard', 'Femme', 'Combinaison courte bustier à imprimé léopard.'],
+  ['robe-rose-dos-nu', 'Robe rose dos nu', 'Femme', 'Robe rose avec liens croisés dans le dos.'],
+  ['robe-blanche-79', 'Robe blanche à motif 79', 'Femme', 'Robe blanche près du corps avec numéro rose et dos ouvert.'],
+  ['robe-rayee-col-rond', 'Robe rayée à col rond', 'Femme', 'Robe sans manches à rayures noires et blanches et col rond.'],
+  ['robe-rayee-col-v', 'Robe rayée à col en V', 'Femme', 'Robe à col en V avec rayures vertes, blanches et marron.'],
+  ['maillot-new-york-47', 'Maillot à manches courtes — New York 47', 'Homme', 'Maillot à manches courtes avec inscription New York et numéro 47.'],
+  ['sac-noir-papillon', 'Sac bandoulière noir à nœud papillon', 'Accessoires', 'Petit sac noir avec bandoulière et détail de nœud sur le devant.'],
+  ['sac-jean-etoiles', 'Sac à main en jean à étoiles', 'Accessoires', 'Sac en jean bleu avec motifs étoilés et chaîne.'],
+  ['sac-vert', 'Sac à main vert', 'Accessoires', 'Sac vert avec anse et bandoulière.'],
+  ['sac-vintage-bordeaux', 'Sac à main vintage bordeaux', 'Accessoires', 'Sac à main bordeaux avec anses et bandoulière.'],
+  ['sac-fourrure-motifs', 'Sac à main en fourrure à motifs', 'Accessoires', 'Sacs à motifs animaliers visibles en plusieurs coloris sur le catalogue.'],
+  ['sac-bleu-clair', 'Sac à main bleu clair', 'Accessoires', 'Sac bleu clair avec rabat et anse.'],
+  ['sac-jean-rose', 'Sac bandoulière en jean à détails roses', 'Accessoires', 'Sac en jean à détails roses, étoiles et bandoulière.'],
+  ['sacs-bandouliere-colores', 'Sac bandoulière femme', 'Accessoires', 'Petits sacs à bandoulière présentés dans plusieurs coloris.'],
+  ['complet-culotte-homme', 'Complet culotte homme', 'Homme', 'Ensemble homme avec chemise à manches courtes et short.'],
+  ['tee-shirt-blanc', 'T-shirt blanc imprimé', 'Homme', 'T-shirt blanc avec imprimé graphique.'],
+  ['complet-pantalon-homme', 'Complet pantalon homme — 88', 'Homme', 'Ensemble sombre avec haut à numéro 88 et pantalon.'],
+  ['culotte-oversize', 'Culotte oversize', 'Homme', 'Shorts oversize présentés en plusieurs motifs et coloris.'],
+  ['boxeurs', 'Boxeurs', 'Sous-vêtements', 'Boxeurs présentés dans plusieurs modèles et coloris.']
+];
+
+export const catalogue = entries.map(([reference, name, category, description]) => ({
+  id: createHash('sha256').update('jaures-whatsapp-' + reference).digest('hex').slice(0, 24),
+  name, category, description, price: null, stock: null, sizes: '', colors: '', image: '', images: [], active: true
+}));

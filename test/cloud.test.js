@@ -17,7 +17,7 @@ test('Supabase conserve articles, photos et sessions entre deux instances', asyn
     const token = endpoint.searchParams.get('token')?.slice(3);
     let result = null;
     if (endpoint.pathname === '/rest/v1/products') {
-      if (method === 'POST') rows.set(payload.id, payload);
+      if (method === 'POST') { if (Array.isArray(payload)) { assert.match(options.headers.Prefer,/ignore-duplicates/); for (const row of payload) if (!rows.has(row.id)) rows.set(row.id,row); } else rows.set(payload.id, payload); }
       else if (method === 'DELETE') rows.delete(id);
       else if (id) result = rows.has(id) ? [{ content: rows.get(id).content }] : [];
       else result = [...rows.values()].filter(row => endpoint.searchParams.has('content->>active') ? row.content.active : true);
@@ -52,6 +52,8 @@ test('Supabase conserve articles, photos et sessions entre deux instances', asyn
   for(let i=0;i<10;i++)assert.equal(await first.allowLogin('test-ip-hash'),true);
   assert.equal(await second.allowLogin('test-ip-hash'),false);
   await second.clearLogin('test-ip-hash');assert.equal(await first.allowLogin('test-ip-hash'),true);
+  await first.importCatalogue([{id,name:'Do not overwrite',active:true},{id:'b'.repeat(24),name:'Imported',active:true}]);
+  assert.equal((await second.get(id)).name,'Test');assert.equal((await second.get('b'.repeat(24))).name,'Imported');
   await first.remove(id);assert.equal(await second.get(id),null);
 });
 
@@ -65,7 +67,7 @@ test('Le point d’entrée Vercel accepte le corps déjà analysé et réécrit 
   const { mkdtemp, rm } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
   const directory=await mkdtemp(tmpdir()+'/jm-handler-');
-  process.env.DATA_DIR=directory;process.env.ADMIN_PASSWORD='test-handler-password';
+  process.env.IMPORT_WHATSAPP_CATALOGUE='false';process.env.DATA_DIR=directory;process.env.ADMIN_PASSWORD='test-handler-password';
   delete process.env.VERCEL;delete process.env.SUPABASE_URL;
   try {
     const {default:handler}=await import('../lib/handler.js');

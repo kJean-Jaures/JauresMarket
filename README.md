@@ -42,13 +42,15 @@ Les comptes, les offres et leurs limites restent à vérifier auprès des héber
 
 ## Utilisation
 
-Ajouter les vrais articles dans `/admin`. Photos JPG, PNG ou WebP jusqu’à **2 Mo**. Les tailles et couleurs sont séparées par des virgules. Le stock est commun aux variantes d’un article. Un article masqué disparaît du catalogue ; un article épuisé reste visible.
+Le catalogue initial contient **42 fiches** préparées à partir des captures WhatsApp fournies. Elles sont importées automatiquement au premier chargement du catalogue après déploiement. Les identifiants sont stables : les fiches existantes ne sont pas écrasées, même après redémarrage. Les suppressions des fiches importées sont conservées. Les prix et stocks non communiqués sont laissés à confirmer ; aucune disponibilité ni aucun tarif ne sont inventés. Les captures ne sont pas incluses comme photos produit : ces fiches affichent « Photo à venir ».
+
+Modifier les articles dans `/admin`. Chaque article accepte **8 photos** JPG, PNG ou WebP. La première sert de photo principale ; les flèches permettent de changer l’ordre. Les visiteurs peuvent parcourir les photos dans la fiche produit. Les photos sont envoyées une par une, réduites au besoin à 1 800 pixels, puis stockées séparément (2 Mo maximum après réduction). En local, elles sont dans `.data/images/` ; sur Supabase, dans le bucket `product-images`. Les tailles et couleurs sont séparées par des virgules. Le stock est commun aux variantes d’un article. Un article masqué disparaît du catalogue ; un article épuisé reste visible. Laisser le prix ou le stock vide affiche « À confirmer ». Les articles à prix inconnu restent commandables sur WhatsApp, sans total trompeur. `IMPORT_WHATSAPP_CATALOGUE=false` désactive l’import automatique pour les tests ou un autre catalogue ; cette option ne supprime pas les fiches déjà importées.
 
 Le panier est conservé dans le navigateur. La commande ouvre un message WhatsApp avec les articles, variantes, quantités et total. Le client doit envoyer le message. Aucun paiement, réservation ou suivi de commande n’est effectué sur le site : disponibilité, paiement et livraison sont confirmés avec la boutique.
 
 Le numéro de discussion provient de l’ancienne affiche : `+225 05 74 76 38 73`. Le lien catalogue fourni est conservé tel quel : `https://wa.me/c/22574763873`. TikTok : `https://www.tiktok.com/@jaures_market`. Vérifier les destinations avant ouverture publique.
 
-Les visuels de campagne sont illustratifs. Aucun faux produit ou prix n’est ajouté. Les informations légales et conditions de vente propres à la boutique restent à compléter avant ouverture publique.
+Les visuels de campagne sont illustratifs. Les fiches initiales reprennent les articles visibles dans les captures, avec des descriptions limitées aux détails observables. Les informations légales et conditions de vente propres à la boutique restent à compléter avant ouverture publique.
 
 ## Tests
 
@@ -56,7 +58,7 @@ Les visuels de campagne sont illustratifs. Aucun faux produit ou prix n’est aj
 npm test
 ```
 
-Les tests vérifient le cycle des articles, les permissions, la persistance et la révocation des sessions, la limitation des connexions et le point d’entrée Vercel. L’adaptateur Supabase est testé avec des réponses HTTP simulées ; ces tests ne valident pas un projet Supabase distant ni un déploiement Vercel réel.
+Les tests vérifient l’import sans écrasement du catalogue, la conservation des suppressions, les photos multiples, les prix inconnus, le cycle des articles, les permissions, la persistance et la révocation des sessions, la limitation des connexions et le point d’entrée Vercel. L’adaptateur Supabase est testé avec des réponses HTTP simulées ; ces tests ne valident pas un projet Supabase distant ni un déploiement Vercel réel.
 
 ## Dépannage Vercel
 
