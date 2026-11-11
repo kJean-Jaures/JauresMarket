@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file-if-exists=.env server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "build": "node --check lib/handler.js && node --check lib/store.js && node --check api/index.js && node scripts/build.js"
   },
   "engines": {
     "node": "24.x"

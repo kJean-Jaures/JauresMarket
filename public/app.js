@@ -40,4 +40,30 @@ $('#cart-items').addEventListener('click',e=>{const remove=e.target.closest('[da
 $('#cart-open').addEventListener('click',()=>{renderCart();$('#cart-dialog').showModal();});
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.close).close()));
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
-saveCart();fetch('/api/products').then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{products=data;render();}).catch(()=>{$('#products').innerHTML='<div class="empty"><h3>Le catalogue ne charge pas.</h3><p>Réessaie dans un instant ou contacte-nous sur WhatsApp.</p></div>';});
+saveCart();
+async function loadCatalogue() {
+  const status = $('#catalogue-status');
+  try {
+    const response = await fetch('/api/products', { signal: AbortSignal.timeout(6000) });
+    if (!response.ok) throw Error('API indisponible');
+    const result = await response.json();
+    if (!Array.isArray(result)) throw Error('Réponse invalide');
+    products = result;
+    status.hidden = true;
+  } catch {
+    try {
+      const response = await fetch('/catalogue.json', { cache: 'no-cache' });
+      if (!response.ok) throw Error('Catalogue indisponible');
+      const result = await response.json();
+      if (!Array.isArray(result)) throw Error('Réponse invalide');
+      products = result.map(p => ({ ...p, price: null, stock: null }));
+      status.textContent = 'Sélection de référence · Confirme le modèle, son prix et sa disponibilité avec nous sur WhatsApp.';
+      status.hidden = false;
+    } catch {
+      $('#products').innerHTML = '<div class="empty"><h3>Retrouve la sélection sur WhatsApp.</h3><p>Nous t’aidons à choisir tes articles directement.</p><a class="button blue" href="https://wa.me/c/22574763873" target="_blank" rel="noopener">Ouvrir le catalogue WhatsApp ↗</a></div>';
+      return;
+    }
+  }
+  render();
+}
+loadCatalogue();

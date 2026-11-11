@@ -52,6 +52,14 @@ Le numéro de discussion provient de l’ancienne affiche : `+225 05 74 76 38 73
 
 Les visuels de campagne sont illustratifs. Les fiches initiales reprennent les articles visibles dans les captures, avec des descriptions limitées aux détails observables. Les informations légales et conditions de vente propres à la boutique restent à compléter avant ouverture publique.
 
+## Catalogue de secours
+
+`npm run build` génère `public/catalogue.json` à partir des références de `data/catalogue.js`. Si l’API ne répond pas sous six secondes, échoue ou renvoie une réponse invalide, le navigateur affiche cette sélection de référence avec des prix et disponibilités à confirmer. Le bandeau l’indique et la commande WhatsApp reste utilisable. Une réponse API valide, même vide, est prioritaire et conserve les masquages et suppressions du catalogue en ligne.
+
+Cette sélection est une liste de références initiales, pas un inventaire synchronisé : elle ne garantit pas qu’un article est encore vendu. Elle ne répare pas la connexion à Supabase ou l’administration. En cas de panne, vérifier les variables Vercel et les logs API. Les modifications de la base réapparaissent dès que l’API fonctionne.
+
+Les images de campagne servent uniquement d’inspiration dans l’accueil et les catégories. Aucune photo Pinterest n’a été importée : l’accès était bloqué depuis l’environnement de développement. Les fiches sans vraie photo affichent explicitement « Photo à venir ».
+
 ## Tests
 
 ```sh
